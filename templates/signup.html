@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0b0f19]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APINOW – Sign In</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              500: "#6d5dfc",
+              600: "#5b4ff2"
+            },
+            neon: {
+              blue: "#3b82f6",
+              purple: "#8b5cf6"
+            }
+          },
+          boxShadow: {
+            glow: "0 0 20px rgba(139, 92, 246, 0.5)"
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Optional external CSS -->
+  <link rel="stylesheet" href="/909989.css">
+</head>
+
+<body class="h-full text-gray-100">
+  
+  <!-- Custom Navbar -->
+  <custom-navbar></custom-navbar>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow flex items-center justify-center pt-24 pb-12">
+    
+    <div class="w-full max-w-md bg-[#121826]/70 backdrop-blur-xl p-8 rounded-2xl shadow-2xl shadow-purple-500/20 border border-purple-500/20 animate-fadeIn">
+
+      <!-- Logo / Title -->
+      <h2 class="text-center text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent drop-shadow-lg">
+        Welcome Back
+      </h2>
+
+      <p class="mt-2 text-center text-sm text-gray-400">
+        Sign in to continue building with APINOW – Web Coder
+      </p>
+
+      <!-- Login Buttons -->
+      <div class="mt-8 space-y-3">
+
+        <!-- Google -->
+        <button id="google-login"
+          class="w-full flex justify-center items-center gap-3 py-2 px-4 rounded-lg bg-[#1b2333] border border-gray-700 hover:border-purple-500 hover:shadow-glow transition-all duration-300 font-medium">
+          <i data-feather="chrome" class="h-5 w-5 text-neon-blue"></i>
+          <span>Sign in with Google</span>
+        </button>
+
+        <!-- GitHub -->
+        <button id="github-login"
+          class="w-full flex justify-center items-center gap-3 py-2 px-4 rounded-lg bg-[#1b2333] border border-gray-700 hover:border-purple-500 hover:shadow-glow transition-all duration-300 font-medium">
+          <i data-feather="github" class="h-5 w-5 text-gray-300"></i>
+          <span>Sign in with GitHub</span>
+        </button>
+
+        <!-- Microsoft -->
+        <button id="microsoft-login"
+          class="w-full flex justify-center items-center gap-3 py-2 px-4 rounded-lg bg-[#1b2333] border border-gray-700 hover:border-purple-500 hover:shadow-glow transition-all duration-300 font-medium">
+          <i data-feather="briefcase" class="h-5 w-5 text-neon-purple"></i>
+          <span>Sign in with Microsoft</span>
+        </button>
+
+      </div>
+
+      <!-- Signup -->
+      <p class="mt-6 text-center text-sm text-gray-400">
+        Don't have an account?
+        <a href="/signup" class="font-medium text-purple-400 hover:text-purple-300 transition-all">
+          Sign up
+        </a>
+      </p>
+
+    </div>
+
+  </main>
+
+  <!-- Scripts -->
+  <script> feather.replace(); </script>
+  <script src="/9203945.js"></script>
+  <script src="/92038405.js"></script>
+  <script src="/92384050.js"></script>
+  <script src="/909909009.js"></script>
+  <script type="module" src="/9834056.js"></script>
+  
+  <!-- Custom Footer -->
+  <custom-footer></custom-footer>
+
+</body>
+</html>

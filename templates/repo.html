@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APINOW - Code Studio</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* FIXED NAVBAR + PADDING */
+        custom-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+        body {
+            padding-top: 70px; /* adjust if needed */
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            overflow: hidden;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        
+        .panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            box-shadow: 
+                0 0 20px rgba(6, 182, 212, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .panel:hover {
+            border-color: rgba(6, 182, 212, 0.35);
+            box-shadow: 
+                0 0 25px rgba(6, 182, 212, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+        
+        .floating-btn {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            box-shadow: 
+                0 4px 20px rgba(6, 182, 212, 0.3),
+                0 0 30px rgba(6, 182, 212, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .floating-btn:hover {
+            transform: scale(1.15) translateY(-4px);
+            box-shadow: 
+                0 8px 30px rgba(6, 182, 212, 0.4),
+                0 0 40px rgba(6, 182, 212, 0.3),
+                0 0 60px rgba(6, 182, 212, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        #btn2 {
+            bottom: 100px;
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+        }
+        
+        #btn3 {
+            bottom: 176px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .floating-btn i {
+            color: white;
+        }
+        
+        .chat-bubble { animation: slideIn 0.3s ease-out; }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .editor-glow {
+            box-shadow: 
+                inset 0 0 20px rgba(6, 182, 212, 0.1),
+                0 0 10px rgba(6, 182, 212, 0.05);
+        }
+        
+        .input-glow:focus {
+            box-shadow: 
+                0 0 0 3px rgba(6, 182, 212, 0.1),
+                0 0 15px rgba(6, 182, 212, 0.2);
+            border-color: rgba(6, 182, 212, 0.5);
+        }
+        
+        .btn-glow:hover {
+            box-shadow: 
+                0 0 0 3px rgba(6, 182, 212, 0.1),
+                0 0 20px rgba(6, 182, 212, 0.3);
+        }
+
+        .status-indicator {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+
+<body class="overflow-hidden">
+<custom-navbar></custom-navbar>
+    <!-- MAIN LAYOUT (fills everything below navbar) -->
+    <div class="flex fixed top-[70px] left-0 right-0 bottom-0 overflow-hidden">
+
+        <!-- LEFT CHAT PANEL -->
+    <div id="chatPanel"
+         class="w-80 lg:w-72 xl:w-80 flex flex-col border-r border-cyan-500/20 backdrop-blur-sm shrink-0">
+
+        <div class="px-6 py-4 border-b border-cyan-500/20 bg-gradient-to-r from-cyan-900/20 to-transparent">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold flex items-center gap-3 text-cyan-400">
+                    <i data-feather="message-circle" class="w-5 h-5"></i>
+                    <span>AI Assistant</span>
+                </h2>
+                <div class="flex items-center gap-2 text-xs text-cyan-300">
+                    <div class="status-indicator"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin">
+            <div class="chat-bubble">
+                <div class="bg-gradient-to-br from-gray-800/50 to-gray-900/40 p-4 rounded-xl border border-cyan-500/20 backdrop-blur-sm">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-cyan-500/20 rounded-full flex items-center justify-center">
+                            <i data-feather="cpu" class="w-4 h-4 text-cyan-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm text-gray-300 leading-relaxed">
+                    Hello! I'm your AI coding assistant. Ready to build something amazing?
+                            </p>
+                            <p class="text-xs text-cyan-400 mt-2 flex items-center gap-1">
+                                <i data-feather="clock" class="w-3 h-3"></i>
+                                Just now
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+        <div class="px-6 py-4 border-t border-cyan-500/20 bg-gradient-to-r from-transparent to-cyan-900/10">
+            <div class="flex gap-3">
+                <div class="relative flex-1">
+                    <input id="chatInput"
+                           placeholder="describe your Website..."
+                           class="w-full bg-gradient-to-r from-gray-900/50 to-gray-800/30 border border-cyan-500/30 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-cyan-500/50 input-glow pr-12 placeholder-gray-500">
+                    <div class="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400/50">
+                        <i data-feather="message-square" class="w-4 h-4"></i>
+                    </div>
+                </div>
+                <button id="sendBtn"
+                        class="bg-gradient-to-br from-cyan-600 to-cyan-700 hover:from-cyan-500 hover:to-cyan-600 px-4 py-3 rounded-xl shadow-lg border border-cyan-500/30 btn-glow flex items-center">
+                    <i data-feather="send" class="w-4 h-4 text-white"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CENTER CODE EDITOR -->
+    <div class="flex-1 flex flex-col min-w-0 border-x border-cyan-500/20">
+        <div class="px-6 py-3 border-b border-cyan-500/20 bg-gradient-to-r from-cyan-900/10 to-transparent">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <span id="currentFilename" class="text-sm font-medium text-cyan-300">index.html</span>
+                </div>
+                <span class="text-xs text-gray-400 flex items-center gap-1">
+                    <i class="fas fa-code"></i> ACE Editor
+                </span>
+                </div>
+            </div>
+
+        <div id="editor" class="flex-1 bg-gray-900/50 editor-glow min-w-0"></div>
+    </div>
+
+    <!-- RIGHT LIVE PREVIEW -->
+    <div class="w-[40%] xl:w-[45%] lg:w-[38%] min-w-[320px] max-w-[700px] flex flex-col border-l border-cyan-500/20 shrink">
+        <div class="px-6 py-3 border-b border-cyan-500/20 bg-gradient-to-r from-transparent to-cyan-900/10">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span class="text-sm font-medium text-cyan-300">Live Preview</span>
+                </div>
+                <button id="refreshPreview" class="p-2 rounded-lg btn-glow hover:bg-cyan-500/10">
+                    <i data-feather="refresh-cw" class="w-4 h-4 text-cyan-400"></i>
+                </button>
+            </div>
+        </div>
+
+        <iframe id="preview" class="flex-1 w-full bg-white border-0"></iframe>
+    </div>
+
+</div>
+
+<!-- BUTTONS -->
+<div id="btn1" class="floating-btn group" title="Run Code">
+    <div class="relative flex items-center justify-center">
+        <i data-feather="play" class="w-5 h-5 text-white"></i>
+    </div>
+</div>
+
+<div id="btn2" class="floating-btn group" title="Download ZIP">
+    <div class="relative flex items-center justify-center">
+        <i data-feather="download" class="w-5 h-5 text-white"></i>
+    </div>
+</div>
+<script>
+
+
+</script>
+<script>
+    // live-preview.js
+(function () {
+  "use strict";
+
+  // CONFIG
+  const ENTRY_FILENAME = "index.html";    // file used as the entry point for preview
+  const PREVIEW_IFRAME_ID = "preview";    // id of the iframe in your UI
+  const CURRENT_FILENAME_ID = "currentFilename"; // optional status element
+  const DEBOUNCE_MS = 300;
+
+  // utils
+  function log(...args) { console.info("[live-preview]", ...args); }
+  function warn(...args) { console.warn("[live-preview]", ...args); }
+  function err(...args) { console.error("[live-preview]", ...args); }
+
+  function getPreviewIframe() {
+    const iframe = document.getElementById(PREVIEW_IFRAME_ID);
+    if (!iframe) throw new Error(`Iframe #${PREVIEW_IFRAME_ID} not found`);
+    return iframe;
+  }
+
+  function safeGetRepoFiles() {
+    if (typeof window.__repoFiles !== "object") {
+      throw new Error("window.__repoFiles is not available — ensure repo loader ran first");
+    }
+    return window.__repoFiles;
+  }
+
+  // create blob URLs for repo files and return a map: filename -> blobUrl
+  function makeBlobUrlMap(files) {
+    const map = {};
+    Object.keys(files).forEach(fname => {
+      const content = files[fname];
+      if (content == null) return;
+      // choose mime type by extension (basic)
+      const ext = fname.split(".").pop().toLowerCase();
+      let mime = "text/plain;charset=utf-8";
+      if (["html", "htm"].includes(ext)) mime = "text/html;charset=utf-8";
+      else if (ext === "css") mime = "text/css;charset=utf-8";
+      else if (["js","mjs","cjs"].includes(ext)) mime = "application/javascript;charset=utf-8";
+      else if (["json"].includes(ext)) mime = "application/json;charset=utf-8";
+      else if (["svg"].includes(ext)) mime = "image/svg+xml";
+      else if (["png"].includes(ext)) mime = "image/png";
+      else if (["jpg","jpeg"].includes(ext)) mime = "image/jpeg";
+      else if (["gif"].includes(ext)) mime = "image/gif";
+      else if (["woff"].includes(ext)) mime = "font/woff";
+      else if (["woff2"].includes(ext)) mime = "font/woff2";
+
+      // For binary-like files the loader may have returned base64 or raw binary in string.
+      // We'll assume content is text (your backend gives textual content for code files).
+      try {
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        map[fname] = url;
+      } catch (e) {
+        warn("Failed to create blob for", fname, e);
+      }
+    });
+    return map;
+  }
+
+  // rewrite references in HTML to point at blob urls:
+  // looks for src="", href="", url(...) in CSS within style tags/attributes
+  function rewriteHtmlReferences(html, blobMap) {
+    // 1) Replace src/href attributes like src="path/to/file.js" or src='...'
+    // We'll perform multiple simple regexes; not a full parser but works for common cases.
+    const attrRegex = /(src|href)\s*=\s*(['"])(.*?)\2/gi;
+    html = html.replace(attrRegex, (m, attr, quote, v) => {
+      // if v already is a blob: url or absolute, ignore except relative repo files
+      if (v.startsWith("blob:") || v.startsWith("data:") || v.startsWith("http://") || v.startsWith("https://") || v.startsWith("//")) {
+        return m;
+      }
+      // normalize leading "./" or "/" when matching keys
+      const keyCandidates = [v, v.replace(/^\.\//, ""), v.replace(/^\//, "")];
+      for (const k of keyCandidates) {
+        if (blobMap[k]) return `${attr}=${quote}${blobMap[k]}${quote}`;
+      }
+      return m;
+    });
+
+    // 2) Replace url(...) occurrences (e.g. in inline styles or style tags)
+    const urlRegex = /url\(\s*(['"]?)(.*?)\1\s*\)/gi;
+    html = html.replace(urlRegex, (m, quote, v) => {
+      if (v.startsWith("blob:") || v.startsWith("data:") || v.startsWith("http://") || v.startsWith("https://") || v.startsWith("//")) return m;
+      const keyCandidates = [v, v.replace(/^\.\//, ""), v.replace(/^\//, "")];
+      for (const k of keyCandidates) {
+        if (blobMap[k]) return `url(${blobMap[k]})`;
+      }
+      return m;
+    });
+
+    return html;
+  }
+
+  // inject base tag to help relative links/css/js resolve properly (pointing to '/')
+  function injectBase(html, baseHref = "./") {
+    // insert <base href="..."> into <head> if exists, else create a head
+    if (/<head[\s>]/i.test(html)) {
+      return html.replace(/<head([^>]*)>/i, (m, g1) => `<head${g1}><base href="${baseHref}">`);
+    } else {
+      return `<head><base href="${baseHref}"></head>\n${html}`;
+    }
+  }
+
+  // assemble preview HTML (rewrite references to blobs)
+  function assemblePreviewHtml(entryHtml, blobMap) {
+    // first inject base tag to ensure relative resolution works (we use "./" so repo-relative)
+    let html = injectBase(entryHtml, "./");
+    // rewrite references to blob urls
+    html = rewriteHtmlReferences(html, blobMap);
+    return html;
+  }
+
+  // set iframe content using blob (preferred) or srcdoc fallback
+  function setIframeContent(iframe, html) {
+    // Create a blob so scripts run and relative imports resolved to blob urls in html
+    try {
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      // remove previous blobUrl stored on iframe to revoke it
+      if (iframe._lastBlobUrl) {
+        try { URL.revokeObjectURL(iframe._lastBlobUrl); } catch (e) { /* ignore */ }
+      }
+      iframe.src = url;
+      iframe._lastBlobUrl = url;
+    } catch (e) {
+      warn("Blob approach failed, falling back to srcdoc:", e);
+      // fallback: use srcdoc (some browsers may block script execution for srcdoc depending on CSP)
+      iframe.removeAttribute("src");
+      iframe.srcdoc = html;
+    }
+  }
+
+  // public updater: builds blobs and updates preview using entry content from repo files
+  function updatePreviewFromRepo(files, entryFilename = ENTRY_FILENAME) {
+    const iframe = getPreviewIframe();
+    const currentStatus = document.getElementById(CURRENT_FILENAME_ID);
+    if (currentStatus) currentStatus.innerText = `Preview: building...`;
+
+    const entryFileKeys = Object.keys(files).filter(k => k.toLowerCase() === entryFilename.toLowerCase());
+    if (entryFileKeys.length === 0) {
+      // attempt to find any .html file as fallback
+      const anyHtml = Object.keys(files).find(f => f.toLowerCase().endsWith(".html"));
+      if (!anyHtml) {
+        if (currentStatus) currentStatus.innerText = `Preview: no index.html found`;
+        err("No entry HTML found (index.html missing) in repo files.");
+        // clear iframe
+        iframe.srcdoc = "<pre style='color:#faa'>No index.html found in repository</pre>";
+        return;
+      }
+      entryFilename = anyHtml;
+    } else {
+      entryFilename = entryFileKeys[0];
+    }
+
+    const entryContent = files[entryFilename];
+    if (typeof entryContent !== "string") {
+      err("Entry file content is not text:", entryFilename);
+      if (currentStatus) currentStatus.innerText = `Preview: bad index file`;
+      iframe.srcdoc = "<pre style='color:#faa'>Entry file is not text</pre>";
+      return;
+    }
+
+    // create blob map for all files
+    const blobMap = makeBlobUrlMap(files);
+
+    // assemble and rewrite html
+    const previewHtml = assemblePreviewHtml(entryContent, blobMap);
+
+    // set iframe content
+    setIframeContent(iframe, previewHtml);
+
+    if (currentStatus) currentStatus.innerText = `Preview: ${entryFilename}`;
+    log("Preview updated with entry:", entryFilename);
+  }
+
+  // debounce helper
+  function debounce(fn, ms) {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), ms);
+    };
+  }
+
+  // Hook editor changes (if ACE exists) to update preview automatically
+  function wireEditorToPreview() {
+    // require __repoFiles to exist
+    let files;
+    try { files = safeGetRepoFiles(); } catch (e) {
+      err(e.message);
+      return;
+    }
+
+    const iframe = document.getElementById(PREVIEW_IFRAME_ID);
+    if (!iframe) {
+      err(`#${PREVIEW_IFRAME_ID} iframe not found`);
+      return;
+    }
+
+    // Build initial preview
+    updatePreviewFromRepo(files);
+
+    // If ACE editor available, update the in-memory file for current file when content changes,
+    // and rebuild preview if the entry file was changed.
+    if (window.editor && typeof window.editor.getValue === "function") {
+      let lastFilename = (document.getElementById("currentFilename") || {}).innerText || "";
+      // When user selects different file in file list, update lastFilename from the UI text.
+      function refreshLastFilenameFromUI() {
+        const el = document.getElementById("currentFilename");
+        if (el) {
+          // UI may show "path — loading..." so extract filename token before " — "
+          lastFilename = el.innerText.split(" — ")[0] || lastFilename;
+        }
+      }
+      const debouncedUpdate = debounce(() => {
+        refreshLastFilenameFromUI();
+        if (!lastFilename) return;
+        const newContent = window.editor.getValue();
+        // update in-memory repo files
+        files[lastFilename] = newContent;
+        // if the edited file is the entry (index.html) or referenced by it, update preview
+        const entry = (Object.keys(files).find(k => k.toLowerCase() === ENTRY_FILENAME) || Object.keys(files).find(k => k.toLowerCase().endsWith(".html")));
+        if (entry === lastFilename || entry == null) {
+          log("Editor changed for entry file -> rebuilding preview");
+          updatePreviewFromRepo(files, entry || ENTRY_FILENAME);
+        } else {
+          // if a non-entry file changed (ex: compounds/navbar.js or style.css) we still rebuild
+          // because those files are referenced by blob urls and must be recreated.
+          log("Editor changed for non-entry file -> rebuilding preview to update blob map");
+          updatePreviewFromRepo(files, entry);
+        }
+      }, DEBOUNCE_MS);
+
+      // ACE event: on change
+      try {
+        window.editor.session.removeListener && window.editor.session.removeAllListeners && window.editor.session.removeAllListeners("change");
+      } catch (e) { /* ignore */ }
+      window.editor.session.on("change", debouncedUpdate);
+
+      // Also watch for clicks on file list to update lastFilename immediately
+      document.addEventListener("click", (ev) => {
+        const li = ev.target.closest && ev.target.closest("#fileList li[data-fname]");
+        if (li) {
+          const fname = li.dataset.fname;
+          if (fname) {
+            // set lastFilename to this one
+            lastFilename = fname;
+            // update preview if selecting a different entry
+            debouncedUpdate();
+          }
+        }
+      });
+
+      // Also wire a manual refresh button if present
+      const refreshBtn = document.getElementById("refreshPreview");
+      if (refreshBtn) {
+        refreshBtn.addEventListener("click", () => updatePreviewFromRepo(files));
+      }
+    } else {
+      warn("ACE editor not found — preview will not live-update on edits. You can still click Refresh.");
+      // Wire refresh button if present
+      const refreshBtn = document.getElementById("refreshPreview");
+      if (refreshBtn) refreshBtn.addEventListener("click", () => updatePreviewFromRepo(files));
+    }
+
+    // Clean up any previous blob URLs when page unloads to avoid leaks
+    window.addEventListener("beforeunload", () => {
+      try {
+        const keys = Object.keys(files || {});
+        keys.forEach(k => {
+          const url = files && files._blobMap && files._blobMap[k];
+          if (url) try { URL.revokeObjectURL(url); } catch (e) {}
+        });
+      } catch (e) {}
+    });
+  }
+
+  // Run wiring once DOM ready and repoFiles available. If repo loader runs later, wait.
+  function initWhenReady() {
+    // wait for DOM + __repoFiles
+    const readyCheck = () => {
+      const iframe = document.getElementById(PREVIEW_IFRAME_ID);
+      const repoFilesReady = typeof window.__repoFiles === "object";
+      if (!iframe) {
+        warn("preview iframe not present yet");
+      }
+      if (!repoFilesReady) {
+        warn("window.__repoFiles not ready yet");
+      }
+      return iframe && repoFilesReady;
+    };
+
+    const maxWait = 5000;
+    const start = Date.now();
+    const iv = setInterval(() => {
+      if (readyCheck()) {
+        clearInterval(iv);
+        try {
+          wireEditorToPreview();
+        } catch (e) {
+          err("Failed to wire preview:", e);
+          alert("Live preview setup failed: " + e.message);
+        }
+        return;
+      }
+      if (Date.now() - start > maxWait) {
+        clearInterval(iv);
+        // give helpful errors
+        if (!document.getElementById(PREVIEW_IFRAME_ID)) {
+          err(`Timed out waiting for iframe #${PREVIEW_IFRAME_ID}.`);
+        }
+        if (typeof window.__repoFiles !== "object") {
+          err("Timed out waiting for window.__repoFiles (repo loader).");
+        }
+      }
+    }, 150);
+  }
+
+  // Kick off
+  if (document.readyState === "complete" || document.readyState === "interactive") initWhenReady();
+  else window.addEventListener("DOMContentLoaded", initWhenReady);
+
+})();
+
+</script>
+
+
+<script src="/90909090.js"></script>
+<script>feather.replace();</script>
+<script src="/9203945.js"></script>
+<script src="/92038405.js"></script>
+<script src="/92384050.js"></script>
+
+<script type="module">
+    import { requireAuth } from "/9309456.js";
+
+    const user = await requireAuth();
+    console.log("Current User:", user);
+</script>
+
+</body>
+</html>

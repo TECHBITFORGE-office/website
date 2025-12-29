@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APINOW - Web Coder | Coming Soon</title>
+    <link rel="stylesheet" href="/92030904.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            500: '#00f5ff',
+                            600: '#00d4ff',
+                        },
+                        secondary: {
+                            500: '#ff00ff',
+                            600: '#e600e6',
+                        }
+                    },
+                    animation: {
+                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                        'neon-flicker': 'neon-flicker 1.5s infinite alternate',
+                        'glitch': 'glitch 0.3s infinite'
+                    },
+                    keyframes: {
+                        'pulse-glow': {
+                            '0%': { 'box-shadow': '0 0 20px #00f5ff, 0 0 40px #00f5ff, 0 0 60px #00f5ff' },
+                            '100%': { 'box-shadow': '0 0 30px #ff00ff, 0 0 60px #ff00ff, 0 0 80px #ff00ff' }
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        'neon-flicker': {
+                            '0%, 19%, 21%, 23%, 25%, 54%, 56%, 100%': { opacity: '1' },
+                            '20%, 24%, 55%': { opacity: '0.8' }
+                        },
+                        'glitch': {
+                            '0%': { transform: 'translate(0)' },
+                            '20%': { transform: 'translate(-2px, 2px)' },
+                            '40%': { transform: 'translate(-2px, -2px)' },
+                            '60%': { transform: 'translate(2px, 2px)' },
+                            '80%': { transform: 'translate(2px, -2px)' },
+                            '100%': { transform: 'translate(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-black text-gray-100 min-h-screen overflow-x-hidden">
+    <custom-navbar></custom-navbar>
+
+
+    <main class="relative">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl animate-float"></div>
+            <div class="absolute top-3/4 right-1/4 w-96 h-96 bg-secondary-500/5 rounded-full blur-3xl animate-float" style="animation-delay: -2s;"></div>
+            <div class="absolute top-1/2 left-1/2 w-80 h-80 bg-primary-500/3 rounded-full blur-3xl animate-float" style="animation-delay: -4s;"></div>
+        </div>
+
+        <!-- Hero Section -->
+        <section class="relative min-h-screen flex items-center justify-center px-4 py-20">
+            <div class="text-center max-w-4xl mx-auto relative z-10">
+                <!-- Glitch Effect Title -->
+                <div class="relative mb-8">
+                    <h1 class="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter animate-neon-flicker">
+                        <span class="bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 bg-clip-text text-transparent">
+                            COMING SOON
+                        </span>
+                    </h1>
+                    <div class="absolute inset-0 text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter opacity-70 animate-glitch">
+                        <span class="bg-gradient-to-r from-secondary-500 via-primary-500 to-secondary-500 bg-clip-text text-transparent">
+                            COMING SOON
+                        </span>
+                    </div>
+                </div>
+
+                <!-- APINOW Brand -->
+                <div class="mb-12">
+                    <h2 class="text-4xl md:text-6xl font-bold mb-4 animate-pulse">
+                        <span class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
+                            APINOW Templates
+                        </span>
+                    </h2>
+                    <p class="text-xl md:text-2xl text-gray-400 font-light">
+                        Templates for AI-Powered Web Development - Generating Code, APIs, and Websites Instantly
+                    </p>
+                </div>
+
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <script src="/92038405.js"></script>
+    <script src="/92038405.js"></script>
+    <script src="/9203945.js"></script>
+    <script src="/909909009.js"></script>
+    <script src="/9023883.js"></script>
+    <script>
+        feather.replace();
+    </script>
+</body>
+</html>

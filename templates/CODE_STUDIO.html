@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APINOW – Web Coder | Code Studio</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        accent: '#06b6d4'
+                    },
+                    animation: {
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px #3b82f6, 0 0 10px #3b82f6, 0 0 15px #3b82f6' },
+                            '100%': { boxShadow: '0 0 10px #8b5cf6, 0 0 20px #8b5cf6, 0 0 30px #8b5cf6' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <custom-navbar></custom-navbar>
+    <br><br><br><br><br>
+    
+    <main class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <section class="text-center mb-12">
+            <div class="animate-float">
+                <h1 class="text-5xl md:text-7xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
+                    Code Studio
+                </h1>
+                <p class="text-xl text-gray-300 mb-8">Your AI-powered development workspace</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="/Code_studio/new" class="bg-primary hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 animate-glow">
+                        <i data-feather="play" class="inline mr-2"></i>
+                        Start New Project
+                    </a>
+                    <a href="/Templates" class="border border-secondary text-secondary hover:bg-secondary hover:text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300">
+                        <i data-feather="layout" class="inline mr-2"></i>
+                        Browse Templates
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Grid -->
+        <section id="projects" class="mb-16">
+            <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            </div>
+        </section>
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <script src="/92038405.js"></script>
+    <script src="/92038405.js"></script>
+    <script src="/9203945.js"></script>
+    <script src="/909909009.js"></script>
+    <script src="/9023883.js"></script>
+    <script src="/920384856.js"></script>
+    <script src="/9309456.js"></script>
+    <script>
+        feather.replace();
+    </script>
+    <script type="module">
+    import { requireAuth } from "/9309456.js";
+
+    // Wait for authentication
+    const user = await requireAuth();
+    console.log("Current User:", user);
+
+    // Get USER ID
+    const USERID = localStorage.getItem("UID");
+    const Username = localStorage.getItem("USERNAME");
+    if (!Username) {
+        console.error("❌ No USERNAME found in localStorage");
+    }
+
+    if (!USERID) {
+        console.error("❌ No UID found in localStorage");
+    } else {
+        loadRepos(USERID);
+    }
+
+    // Fetch user repos
+    async function loadRepos(user_id) {
+        console.log("Sending user_id:", user_id);
+
+        try {
+            const response = await fetch("/get_repo", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id }),
+            });
+
+            const result = await response.json();
+            console.log("Backend Response:", result);
+
+            if (!response.ok) {
+                alert(result.error || "Failed to load repos");
+                return;
+            }
+
+            renderProjects(result.data);
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
+    }
+
+    // Render Project Cards
+    function renderProjects(repos) {
+        const grid = document.getElementById("projects-grid");
+        grid.innerHTML = "";
+
+        if (!repos || repos.length === 0) {
+            grid.innerHTML = `
+                <p class="text-gray-400 col-span-full text-center">
+                    No projects found.
+                </p>
+            `;
+            return;
+        }
+
+        repos.forEach(repo => {
+            // Extract project name (key)
+            const projectName = Object.keys(repo)[0];
+
+            // Extract inside values
+            const projectData = repo[projectName];
+
+            // Extract repo_id
+            const repo_id = projectData.repo_id;
+
+            grid.innerHTML += `
+                <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 
+                            hover:border-blue-400 cursor-pointer transition">
+                        
+                    <h2 class="text-2xl font-bold text-blue-400">${projectName}</h2>
+
+                    <p class="text-gray-400 mt-2">
+                        Repo ID: ${repo_id}
+                    </p>
+
+                    <a href="/Code_studio/${Username}/${repo_id}"
+                       class="text-purple-400 font-semibold mt-4 inline-block hover:text-blue-300">
+                        Open Project →
+                    </a>
+                </div>
+            `;
+        });
+    }
+</script>
+</body>
+</html>

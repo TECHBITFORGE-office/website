@@ -1,0 +1,41 @@
+<script>
+async function loadRepo() {
+    const USERNAME = "{{ USERNAME }}";
+    const Repodid = "{{ Repodid }}";
+
+    const apiURL = `/Code_studio/${USERNAME}/${Repodid}`;
+
+    const response = await fetch(apiURL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Userid": localStorage.getItem("Userid")
+        }
+    });
+
+    const raw = await response.text();
+    console.log("RAW RESPONSE:", raw);
+
+    let data;
+    try {
+        data = JSON.parse(raw);
+    } catch (e) {
+        console.error("JSON parse failed:", e);
+        return;
+    }
+
+    console.log("PARSED JSON:", data);
+
+    if (!data.files) {
+        console.error("❌ No files returned from backend.");
+        return;
+    }
+
+    // Load first file
+    const first = data.files[0];
+    editor.setValue(first.content, -1);
+    document.getElementById("currentFilename").textContent = first.file_name;
+    document.getElementById("preview").srcdoc = first.content;
+}
+document.addEventListener("DOMContentLoaded", loadRepo);
+</script>
