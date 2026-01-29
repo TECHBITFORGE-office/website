@@ -1,4 +1,4 @@
-# app.py
+ # app.py
 import uuid
 import re
 import json
@@ -11,79 +11,160 @@ from flask_cors import CORS
 # from Provider import coherelab_PROVIDER
 from prompt import INITIAL_SYSTEM_PROMPT, FOLLOW_UP_SYSTEM_PROMPT ,EDITOR_AI
 from Login import l as login  # class name is lowercase L
+from requests import Session
+
+
 import requests
 import json
 from typing import List, Dict, Generator, Optional
 
-from requests import Session
 
-
-class LLMCHAT:
-    def __init__(self):
-        self.session = Session()
-        self.base_url = "https://llmchat.in/inference/stream"
-        self.default_model = "deepseek-r1-distill-qwen-32b"
-        self.messages = []
-        self.model_aliases = {
-    "deepseek-r1-distill-qwen-32b": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
-    "llama-3.1-70b-instruct": "@cf/meta/llama-3.1-70b-instruct",
-    "llama-4-scout-17b-16e-instruct": "@cf/meta/llama-4-scout-17b-16e-instruct",
-    "gemma-3-12b-it": "@cf/google/gemma-3-12b-it",
-    "mistral-small-3.1-24b-instruct": "@cf/mistralai/mistral-small-3.1-24b-instruct",
-    "llama-3.3-70b-instruct-fp8-fast": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-    "llama-3.1-8b-instruct": "@cf/meta/llama-3.1-8b-instruct",
-    "llama-3.2-3b-instruct": "@cf/meta/llama-3.2-3b-instruct",
-    "llama-3.2-1b-instruct": "@cf/meta/llama-3.2-1b-instruct",
-    }
-        self.max_tokens = 2048
-        self.headers = {
-            "User-Agent": "Mozilla/5.0",
-            "Accept": "*/*",
+class Deepinfra:
+    def __init__(
+        self,
+        api_key: str="sk-apinow-tbfgenratedpro",
+        base_url: str = "https://back.apinow.in/"
+    ):
+        self.api_key = api_key
+        self.base_url = base_url.rstrip("/")
+        self.session = requests.Session()
+        self.session.headers.update({
+            "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
+            "Accept": "text/event-stream"
+        })
+
+        self.model_aliases = {
+            "Kimi-K2-Instruct": "kimi-k2",
+            "Kimi-K2-Instruct-0905": "kimi-k2-0905",
+            "Qwen3-14B": "qwen14",
+            "Qwen3-30B-A3B": "qwen30",
+            "Qwen3-235B-A22B": "qwen235",
+            "Qwen3-235B-A22B-Instruct-2507": "qwen235-inst",
+            "Qwen3-Coder-30B-A3B-Instruct": "qwen-coder-30",
+            "Qwen3-Coder-480B-A35B-Instruct": "qwen-coder-480",
+            "Qwen3-Coder-480B-A35B-Instruct-Turbo": "qwen-coder-480-turbo",
+
+            "DeepSeek-R1": "deepseek-r1",
+            "DeepSeek-R1-Turbo": "deepseek-r1-turbo",
+            "DeepSeek-R1-0528": "deepseek-r1-0528",
+            "DeepSeek-R1-0528-Turbo": "deepseek-r1-0528-turbo",
+            "DeepSeek-R1-Distill-Qwen-32B": "deepseek-r1-qwen",
+            "DeepSeek-R1-Distill-Llama-70B": "deepseek-r1-llama",
+
+            "DeepSeek-V3": "deepseek-v3",
+            "DeepSeek-V3.1": "deepseek-v3.1",
+            "DeepSeek-V3.2-Exp": "deepseek-v3.1-exp",
+            "DeepSeek-V3-0324": "deepseek-v3-0324",
+            "DeepSeek-V3-0324-Turbo": "deepseek-v3-0324-turbo",
+            "DeepSeek-V3.1-Terminus": "deepseek-terminus",
+            "DeepSeek-Prover-V2-671B": "deepseek-prover",
+
+            "Llama-3.2-90B-Vision-Instruct": "llama90b-vis",
+            "Llama-3.3-70B-Instruct": "llama3.3",
+            "Llama-4-Scout-17B-16E-Instruct": "llama4-scout",
+            "Llama-4-Maverick-17B-128E-Instruct-Turbo": "llama4-maverick",
+            "Llama-4-Maverick-17B-128E-Instruct-FP8": "llama4-maverick-fp8",
+
+            "Mistral-7B-Instruct-v0.3": "mistral7b",
+            "Mistral-Small-3.1-24B-Instruct-2503": "mistral-small-3.1",
+            "Mistral-Small-3.2-24B-Instruct-2506": "mistral-small-3.2",
+
+            "Devstral-Small-2505": "devstral-2505",
+            "Devstral-Small-2507": "devstral-2507",
+
+            "phi-4": "phi4",
+            "phi-4-reasoning-plus": "phi4-reason",
+            "Phi-4-multimodal-instruct": "phi4-mm",
+
+            "gemma-3-4b-it": "gemma4b",
+            "gemma-3-12b-it": "gemma12b",
+            "gemma-3-27b-it": "gemma27b",
+
+            "Sky-T1-32B-Preview": "skyt1",
+            "olmOCR-7B-0725-FP8": "olmocr",
         }
 
-    def __generate__(self):
-        payload = {
-            "messages": self.messages,
-            # "max_tokens": self.max_tokens,
-            "stream": True
-        }
-
-        url = f"{self.base_url}?model={self.model_aliases[self.default_model]}"
-        response = self.session.post(url, json=payload, headers=self.headers, stream=True)
-
-        for raw_line in response.iter_lines(decode_unicode=True):
-            if not raw_line or not raw_line.startswith("data:"):
-                continue
-
-            data = raw_line[5:].strip()
-
-            try:
-                token = eval(data).get("response", "")
-            except:
-                continue
-
-            yield token
-
+    # =======================
+    # CHAT COMPLETION
+    # =======================
     def create(
-            self,
-            messages: list,
-            max_tokens: int = 2048,
-            model:str=  "deepseek-r1-distill-qwen-32b",
-            stream: bool = True
-            ):
-        self.default_model = model
-        self.messages = messages
-        self.max_tokens = max_tokens
-        if stream:
-            return self.__generate__()
-        else:
-            # Non-streaming not implemented\
-            txt = ""
-            for token in self.__generate__():
-                txt += token
-            return txt
+        self,
+        model: str,
+        messages: List[Dict[str, str]],
+        stream: bool = False,
+        # max_tokens: int = 2048,
+        timeout: Optional[int] = None
+    ):
+        url = f"{self.base_url}/v1/chat/completions"
 
+        payload = {
+            "model": self.model_aliases[model],
+            "messages": messages,
+            "stream": stream,
+            # "max_tokens": max_tokens
+        }
+
+        if stream:
+            return self._stream_request(url, payload, timeout)
+        else:
+            return self._normal_request(url, payload, timeout)
+
+    # =======================
+    # NON-STREAM REQUEST
+    # =======================
+    def _normal_request(self, url, payload, timeout):
+        response = self.session.post(
+            url,
+            json=payload,
+            timeout=timeout
+        )
+
+        response.raise_for_status()
+        return response.json()
+
+    # =======================
+    # STREAM REQUEST (SSE)
+    # =======================
+    def _stream_request(
+        self,
+        url: str,
+        payload: dict,
+        timeout: Optional[int]
+    ) -> Generator[str, None, None]:
+
+        response = self.session.post(
+            url,
+            json=payload,
+            stream=True,
+            timeout=timeout
+        )
+
+        response.raise_for_status()
+
+        for line in response.iter_lines(decode_unicode=True):
+            if not line:
+                continue
+
+            if line.startswith("data: "):
+                data = line[len("data: "):].strip()
+
+                if data == "[DONE]":
+                    break
+
+                try:
+                    chunk = json.loads(data)
+                    delta = chunk["choices"][0]["delta"]
+                    content = delta.get("content")
+
+                    if content:
+                        yield content
+
+                except Exception as e:
+                    print("⚠️ Stream parse error:", e)
+                    continue
+
+deepinfra = Deepinfra
 
 app = Flask(__name__)
 CORS(app,supports_credentials=True)
@@ -257,11 +338,11 @@ def PUT(body, headers):
         yield "\n" + json.dumps({"ok": False, "error": str(e)}) + "\n" 
 
 
-deepinfra = LLMCHAT()
+deepinfra = deepinfra()
 
 def POST(body, headers):
     try:
-        model = body.get("model", "gemma-3-12b-it")
+        model = body.get("model", "DeepSeek-V3-0324")
         prompt = body.get("prompt")
 
         if not prompt:
@@ -582,7 +663,5 @@ def signin_page():
 import os
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 1000))
     app.run(host="0.0.0.0", port=port,debug=False)
-
-
